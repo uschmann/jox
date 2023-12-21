@@ -1,0 +1,16 @@
+{
+    "name": "uschmann/jox",
+    "description": "An implementation of the Jox-Interpreter in PHP.",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Uschmann\\Jox\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Andre Uschmann"
+        }
+    ],
+    "require": {}
+}
