@@ -1,8 +1,5 @@
 <?php
 
+$foo = 42;
 
-$foo = 0;
-$str = "Hello world";
-
-
-echo substr($str, 0, 1);
+echo($foo);

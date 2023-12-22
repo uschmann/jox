@@ -69,7 +69,7 @@ class Scanner
                 $this->addToken(Token::TYPE_STAR);
                 break;
             default:
-                $this->errorReporter->error($this->line, 'Unexpected token');
+                $this->errorReporter->error($this->line, "Unexpected token: {$character}");
                 break;
         }
     }

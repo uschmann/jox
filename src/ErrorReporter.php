@@ -12,7 +12,7 @@ class ErrorReporter
 
     protected function report(int $line, string $where, string $message)
     {
-        echo "[{$line}] Error {$where}: {$message}";
+        echo "[{$line}] Error {$where}: {$message}\n";
     }
 
 }
