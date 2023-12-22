@@ -100,6 +100,9 @@ class Scanner
             case "\n":
                 $this->line++;
                 break;
+            case '"':
+                $this->string();
+                break;
             default:
                 $this->errorReporter->error($this->line, "Unexpected token: {$character}");
                 break;
@@ -115,6 +118,27 @@ class Scanner
     protected function advance(): string
     {
         return $this->source[$this->current++];
+    }
+
+    protected function string()
+    {
+        while($this->peek() !== '"' && !$this->isAtEnd()) {
+            if($this->peek() === "\n") {
+                $this->line ++;
+            }
+
+            $this->advance();
+        }
+
+        if($this->isAtEnd()) {
+            $this->errorReporter->error($this->line, 'Unterminated string.');
+            return;
+        }
+
+        $this->advance(); // Consume the closing "
+
+        $value = mb_substr($this->source, $this->start + 1, $this->current - 1 - $this->start - 1);
+        $this->addToken(Token::TYPE_STRING, $value);
     }
 
     protected function peek(): string
