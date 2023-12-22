@@ -1,3 +1,9 @@
+### Build docker image
+
+```
+docker build -t phpdev .
+```
+
 ### Configure XDEBUG in phpstorm for use in docker container
 
 - Hit **ctrl + alt + s** to open the settings and search for **Servers**.
@@ -17,6 +23,6 @@ You can add this to your **~/.bashrc** or **~/.zshrc**
 ```shell
 function phpdebug()
 {
-        docker run -it --rm -e PHP_IDE_CONFIG="serverName=SomeName" -e XDEBUG_SESSION=1 -v $PWD:/app -w /app -u $(id -u):$(id -g) --add-host=host.docker.internal:host-gateway phpdev php $1
+        docker run -it --rm -e PHP_IDE_CONFIG="serverName=SomeName" -e XDEBUG_SESSION=1 -v $PWD:/app -w /app -u $(id -u):$(id -g) --add-host=host.docker.internal:host-gateway phpdev php "$@"
 }
 ```

@@ -38,6 +38,7 @@ class Scanner
         $character = $this->advance();
 
         switch ($character) {
+            // Single character tokens
             case '(':
                 $this->addToken(Token::TYPE_LEFT_PAREN);
                 break;
@@ -68,6 +69,19 @@ class Scanner
             case '*':
                 $this->addToken(Token::TYPE_STAR);
                 break;
+            // Single and double character tokens
+            case '!':
+                $this->addToken($this->match('=') ? Token::TYPE_BANG_EQUAL : Token::TYPE_BANG);
+                break;
+            case '=':
+                $this->addToken($this->match('=') ? Token::TYPE_EQUAL_EQUAL : Token::TYPE_EQUAL);
+                break;
+            case '<':
+                $this->addToken($this->match('=') ? Token::TYPE_LESS_EQUAL : Token::TYPE_LESS);
+                break;
+            case '>':
+                $this->addToken($this->match('=') ? Token::TYPE_GREATER_EQUAL : Token::TYPE_GREATER);
+                break;
             default:
                 $this->errorReporter->error($this->line, "Unexpected token: {$character}");
                 break;
@@ -83,6 +97,20 @@ class Scanner
     protected function advance(): string
     {
         return $this->source[$this->current++];
+    }
+
+    protected function match(string $expected): bool
+    {
+        if($this->isAtEnd()) {
+            return false;
+        }
+
+        if($this->source[$this->current] !== $expected) {
+            return false;
+        }
+
+        $this->current ++;
+        return true;
     }
 
     protected function isAtEnd(): bool
