@@ -20,6 +20,7 @@ class Scanner
         $this->source  = $source;
         $this->start   = 0;
         $this->current = 0;
+        $this->line    = 0;
         $this->tokens  = [];
 
         while (!$this->isAtEnd()) {
@@ -82,6 +83,23 @@ class Scanner
             case '>':
                 $this->addToken($this->match('=') ? Token::TYPE_GREATER_EQUAL : Token::TYPE_GREATER);
                 break;
+            case '/':
+                if ($this->match('/')) {
+                    while ($this->peek() !== "\n" && !$this->isAtEnd()) {
+                        $this->advance();
+                    }
+                } else {
+                    $this->addToken(Token::TYPE_SLASH);
+                }
+                break;
+            case ' ':
+            case "\r":
+            case "\t":
+                // ignore whitespace
+                break;
+            case "\n":
+                $this->line++;
+                break;
             default:
                 $this->errorReporter->error($this->line, "Unexpected token: {$character}");
                 break;
@@ -99,17 +117,26 @@ class Scanner
         return $this->source[$this->current++];
     }
 
+    protected function peek(): string
+    {
+        if ($this->isAtEnd()) {
+            return "\0";
+        }
+
+        return $this->source[$this->current];
+    }
+
     protected function match(string $expected): bool
     {
-        if($this->isAtEnd()) {
+        if ($this->isAtEnd()) {
             return false;
         }
 
-        if($this->source[$this->current] !== $expected) {
+        if ($this->source[$this->current] !== $expected) {
             return false;
         }
 
-        $this->current ++;
+        $this->current++;
         return true;
     }
 
