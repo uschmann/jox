@@ -2,3 +2,4 @@
 (){} // Grouping stuff
 +-*/ // Operators
 "Hello world" // String literals
+0005.123 // Some number

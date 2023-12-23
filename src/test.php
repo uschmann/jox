@@ -1,5 +1,5 @@
 <?php
 
-$foo = 42;
+$foo = ';';
 
-echo($foo);
+echo($foo >= 'a' && $foo <= 'z');

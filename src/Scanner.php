@@ -2,6 +2,8 @@
 
 namespace Uschmann\Jox;
 
+use MongoDB\BSON\Type;
+
 class Scanner
 {
     protected int $start   = 0;
@@ -10,6 +12,25 @@ class Scanner
 
     protected string $source;
     protected array  $tokens;
+
+    const KEYWORDS = [
+        'and'    => Token::TYPE_AND,
+        'class'  => Token::TYPE_CLASS,
+        'else'   => Token::TYPE_ELSE,
+        'false'  => Token::TYPE_FALSE,
+        'for'    => Token::TYPE_FOR,
+        'fun'    => Token::TYPE_FUN,
+        'if'     => Token::TYPE_IF,
+        'nil'    => Token::TYPE_NIL,
+        'or'     => Token::TYPE_OR,
+        'print'  => Token::TYPE_PRINT,
+        'return' => Token::TYPE_RETURN,
+        'super'  => Token::TYPE_SUPER,
+        'this'   => Token::TYPE_THIS,
+        'true'   => Token::TYPE_TRUE,
+        'var'    => Token::TYPE_VAR,
+        'while'  => Token::TYPE_WHILE,
+    ];
 
     public function __construct(public ErrorReporter $errorReporter)
     {
@@ -104,8 +125,10 @@ class Scanner
                 $this->string();
                 break;
             default:
-                if($this->isDigit($character)) {
+                if ($this->isDigit($character)) {
                     $this->number();
+                } elseif ($this->isAlpha($character)) {
+                    $this->identifier();
                 } else {
                     $this->errorReporter->error($this->line, "Unexpected token: {$character}");
                 }
@@ -124,36 +147,52 @@ class Scanner
         return $this->source[$this->current++];
     }
 
-    protected function number()
+    protected function identifier()
     {
-        while($this->isDigit($this->peek())) {
+        while ($this->isAlphaNumeric($this->peek())) {
             $this->advance();
         }
 
-        if($this->peek() === '.' && $this->isDigit($this->peekNext())) {
+        $lexeme    = mb_substr($this->source, $this->start, $this->current - $this->start);
+        $tokenType = self::KEYWORDS[$lexeme] ?? null;
+
+        if($tokenType !== null) {
+            $this->addToken($tokenType);
+        } else {
+            $this->addToken(Token::TYPE_IDENTIFIER, $lexeme);
+        }
+    }
+
+    protected function number()
+    {
+        while ($this->isDigit($this->peek())) {
+            $this->advance();
+        }
+
+        if ($this->peek() === '.' && $this->isDigit($this->peekNext())) {
             // Consume the .
             $this->advance();
 
-            while($this->isDigit($this->peek())) {
+            while ($this->isDigit($this->peek())) {
                 $this->advance();
             }
         }
 
-        $value = (float) mb_substr($this->source, $this->start, $this->current - $this->start);
+        $value = (float)mb_substr($this->source, $this->start, $this->current - $this->start);
         $this->addToken(Token::TYPE_NUMBER, $value);
     }
 
     protected function string()
     {
-        while($this->peek() !== '"' && !$this->isAtEnd()) {
-            if($this->peek() === "\n") {
-                $this->line ++;
+        while ($this->peek() !== '"' && !$this->isAtEnd()) {
+            if ($this->peek() === "\n") {
+                $this->line++;
             }
 
             $this->advance();
         }
 
-        if($this->isAtEnd()) {
+        if ($this->isAtEnd()) {
             $this->errorReporter->error($this->line, 'Unterminated string.');
             return;
         }
@@ -175,7 +214,7 @@ class Scanner
 
     protected function peekNext(): string
     {
-        if($this->current + 1 >= strlen($this->source)) {
+        if ($this->current + 1 >= strlen($this->source)) {
             return "\0";
         }
 
@@ -204,6 +243,18 @@ class Scanner
     protected function isDigit(string $character): bool
     {
         return is_numeric($character);
+    }
+
+    protected function isAlpha(string $character): bool
+    {
+        return ($character >= 'a' && $character <= 'z')
+            || ($character >= 'A' && $character <= 'Z')
+            || $character === '_';
+    }
+
+    protected function isAlphaNumeric(string $character): bool
+    {
+        return $this->isAlpha($character) || $this->isDigit($character);
     }
 
 }
