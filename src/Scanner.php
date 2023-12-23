@@ -104,7 +104,11 @@ class Scanner
                 $this->string();
                 break;
             default:
-                $this->errorReporter->error($this->line, "Unexpected token: {$character}");
+                if($this->isDigit($character)) {
+                    $this->number();
+                } else {
+                    $this->errorReporter->error($this->line, "Unexpected token: {$character}");
+                }
                 break;
         }
     }
@@ -118,6 +122,25 @@ class Scanner
     protected function advance(): string
     {
         return $this->source[$this->current++];
+    }
+
+    protected function number()
+    {
+        while($this->isDigit($this->peek())) {
+            $this->advance();
+        }
+
+        if($this->peek() === '.' && $this->isDigit($this->peekNext())) {
+            // Consume the .
+            $this->advance();
+
+            while($this->isDigit($this->peek())) {
+                $this->advance();
+            }
+        }
+
+        $value = (float) mb_substr($this->source, $this->start, $this->current - $this->start);
+        $this->addToken(Token::TYPE_NUMBER, $value);
     }
 
     protected function string()
@@ -150,6 +173,15 @@ class Scanner
         return $this->source[$this->current];
     }
 
+    protected function peekNext(): string
+    {
+        if($this->current + 1 >= strlen($this->source)) {
+            return "\0";
+        }
+
+        return $this->source[$this->current + 1];
+    }
+
     protected function match(string $expected): bool
     {
         if ($this->isAtEnd()) {
@@ -167,6 +199,11 @@ class Scanner
     protected function isAtEnd(): bool
     {
         return $this->current >= mb_strlen($this->source);
+    }
+
+    protected function isDigit(string $character): bool
+    {
+        return is_numeric($character);
     }
 
 }
