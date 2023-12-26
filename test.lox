@@ -1,5 +1,16 @@
 // This is a comment
-(){} // Grouping stuff
-+-*/ // Operators
-"Hello world" // String literals
-0005.123 // Some number
+
+var x = 42;
+var foo = "bar";
+
+fun add(a, b) {
+    return a + b;
+}
+
+class Person {
+
+    init() {
+        this.name = "John Doe";
+    }
+
+}
