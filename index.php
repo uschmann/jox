@@ -10,7 +10,7 @@ use Uschmann\Jox\Scanner;
 $errorReporter = new ErrorReporter();
 $scanner       = new Scanner($errorReporter);
 $parser        = new Parser($errorReporter);
-$lox           = new Lox($scanner);
+$lox           = new Lox($scanner, $parser);
 $app           = new App($lox);
 
 

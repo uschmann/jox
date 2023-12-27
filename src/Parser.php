@@ -19,7 +19,9 @@ class Parser
 
     public function parse($tokens): Expr|null
     {
-        $this->tokens = $tokens;
+        $this->tokens  = $tokens;
+        $this->current = 0;
+
         try {
             return $this->expression();
         } catch (ParseException $error) {
@@ -176,12 +178,12 @@ class Parser
     protected function synchronize()
     {
         $this->advance();
-        while(!$this->isAtEnd()) {
-            if($this->previous()->type === Token::TYPE_SEMICOLON) {
+        while (!$this->isAtEnd()) {
+            if ($this->previous()->type === Token::TYPE_SEMICOLON) {
                 return;
             }
 
-            switch($this->peek()->type) {
+            switch ($this->peek()->type) {
                 case Token::TYPE_CLASS:
                 case Token::TYPE_FOR:
                 case Token::TYPE_FUN:
