@@ -42,7 +42,7 @@ class Interpreter implements ExprVisitor
                 return (float)$left <= (float)$right;
             case Token::TYPE_BANG_EQUAL:
                 return $left != $right;
-            case Token::TYPE_EQUAL:
+            case Token::TYPE_EQUAL_EQUAL:
                 return $left == $right;
         }
     }
@@ -69,6 +69,11 @@ class Interpreter implements ExprVisitor
         }
 
         return null;
+    }
+
+    public function interpret(Expr $expr)
+    {
+        return $this->evaluate($expr);
     }
 
     protected function evaluate(Expr $expr)

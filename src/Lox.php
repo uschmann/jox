@@ -9,8 +9,9 @@ class Lox
     private $hasError = false;
 
     public function __construct(
-        protected Scanner $scanner,
-        protected Parser  $parser
+        protected Scanner     $scanner,
+        protected Parser      $parser,
+        protected Interpreter $interpreter,
     )
     {
     }
@@ -45,9 +46,12 @@ class Lox
     {
         $tokens = $this->scanner->scanTokens($source);
         $expr   = $this->parser->parse($tokens);
+        $result = $this->interpreter->interpret($expr);
 
-        $astPrinter = new AstPrinter();
-        var_dump($astPrinter->print($expr));
+        //$astPrinter = new AstPrinter();
+        //echo($astPrinter->print($expr) . "\n");
+
+        echo(json_encode($result) . "\n");
 
         //foreach ($tokens as $token) {
         //    var_dump($token->toString());
