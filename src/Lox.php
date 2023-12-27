@@ -46,12 +46,15 @@ class Lox
     {
         $tokens = $this->scanner->scanTokens($source);
         $expr   = $this->parser->parse($tokens);
-        $result = $this->interpreter->interpret($expr);
 
+        if($expr) {
+            $result = $this->interpreter->interpret($expr);
+            echo(json_encode($result) . "\n");
+        }
         //$astPrinter = new AstPrinter();
         //echo($astPrinter->print($expr) . "\n");
 
-        echo(json_encode($result) . "\n");
+
 
         //foreach ($tokens as $token) {
         //    var_dump($token->toString());
