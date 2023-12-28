@@ -21,13 +21,13 @@ class Interpreter implements ExprVisitor
         $left  = $this->evaluate($binary->left);
         $right = $this->evaluate($binary->right);
 
-        switch($binary->operator->type) {
+        switch ($binary->operator->type) {
             case Token::TYPE_MINUS:
                 $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left - (float)$right;
             case Token::TYPE_SLASH:
                 $this->checkNumberOperands($binary->operator, $left, $right);
-                if($right == 0) {
+                if ($right == 0) {
                     throw new RuntimeError($binary->operator, 'Division by zero is not allowed');
                 }
                 return (float)$left / (float)$right;
@@ -35,11 +35,11 @@ class Interpreter implements ExprVisitor
                 $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left * (float)$right;
             case Token::TYPE_PLUS:
-                if(is_numeric($left) && is_numeric($right)) {
+                if (is_numeric($left) && is_numeric($right)) {
                     return $left + $right;
                 }
 
-                if(is_string($left) || is_string($right)) {
+                if (is_string($left) || is_string($right)) {
                     return $left . $right;
                 }
 
@@ -94,7 +94,7 @@ class Interpreter implements ExprVisitor
     {
         try {
             $result = $this->evaluate($expr);
-            return $this->stringify($result);
+            return $result;
         } catch (RuntimeError $error) {
             $this->errorReporter->runtimeError($error);
         }
@@ -120,7 +120,7 @@ class Interpreter implements ExprVisitor
 
     private function checkNumberOperand(Token $operator, $operand): void
     {
-        if(is_numeric($operand)) {
+        if (is_numeric($operand)) {
             return;
         }
 
@@ -129,7 +129,7 @@ class Interpreter implements ExprVisitor
 
     private function checkNumberOperands(Token $operator, $left, $right): void
     {
-        if(is_numeric($left) && is_numeric($right)) {
+        if (is_numeric($left) && is_numeric($right)) {
             return;
         }
 
@@ -138,7 +138,7 @@ class Interpreter implements ExprVisitor
 
     private function stringify($value): string
     {
-        if($value === null) {
+        if ($value === null) {
             return 'nil';
         }
 
