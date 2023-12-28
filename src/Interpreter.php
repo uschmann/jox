@@ -27,6 +27,9 @@ class Interpreter implements ExprVisitor
                 return (float)$left - (float)$right;
             case Token::TYPE_SLASH:
                 $this->checkNumberOperands($binary->operator, $left, $right);
+                if($right == 0) {
+                    throw new RuntimeError($binary->operator, 'Division by zero is not allowed');
+                }
                 return (float)$left / (float)$right;
             case Token::TYPE_STAR:
                 $this->checkNumberOperands($binary->operator, $left, $right);
