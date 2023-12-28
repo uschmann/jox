@@ -35,14 +35,16 @@ class Interpreter implements ExprVisitor
                 $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left * (float)$right;
             case Token::TYPE_PLUS:
-                if(is_string($left) && is_string($right)) {
-                    return $left . $right;
-                }
                 if(is_numeric($left) && is_numeric($right)) {
                     return $left + $right;
                 }
 
-                throw new RuntimeError($binary->operator, "Operands must be two numbers or two strings");
+                if(is_string($left) || is_string($right)) {
+                    return $left . $right;
+                }
+
+
+                throw new RuntimeError($binary->operator, "Operands must be two numbers or at least one strings");
                 break;
             case Token::TYPE_GREATER:
                 $this->checkNumberOperands($binary->operator, $left, $right);
