@@ -11,7 +11,7 @@ use Uschmann\Jox\Scanner;
 $errorReporter = new ErrorReporter();
 $scanner       = new Scanner($errorReporter);
 $parser        = new Parser($errorReporter);
-$interpreter   = new Interpreter();
+$interpreter   = new Interpreter($errorReporter);
 $lox           = new Lox($scanner, $parser, $interpreter);
 $app           = new App($lox);
 

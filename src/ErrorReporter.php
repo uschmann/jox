@@ -19,6 +19,11 @@ class ErrorReporter
         $this->report($line, '', $message);
     }
 
+    public function runtimeError(RuntimeError $error)
+    {
+        echo "[{$error->token->line}] {$error->getMessage()}\n";
+    }
+
     protected function report(int $line, string $where, string $message)
     {
         echo "[{$line}] Error {$where}: {$message}\n";

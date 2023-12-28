@@ -49,7 +49,9 @@ class Lox
 
         if($expr) {
             $result = $this->interpreter->interpret($expr);
-            echo(json_encode($result) . "\n");
+            if($result !== null) {
+                echo(json_encode($result) . "\n");
+            }
         }
         //$astPrinter = new AstPrinter();
         //echo($astPrinter->print($expr) . "\n");

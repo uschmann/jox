@@ -11,6 +11,10 @@ use Uschmann\Jox\Expression\Unary;
 
 class Interpreter implements ExprVisitor
 {
+    public function __construct(protected ErrorReporter $errorReporter)
+    {
+    }
+
 
     #[\Override] public function visitBinary(Binary $binary)
     {
@@ -19,10 +23,13 @@ class Interpreter implements ExprVisitor
 
         switch($binary->operator->type) {
             case Token::TYPE_MINUS:
+                $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left - (float)$right;
             case Token::TYPE_SLASH:
+                $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left / (float)$right;
             case Token::TYPE_STAR:
+                $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left * (float)$right;
             case Token::TYPE_PLUS:
                 if(is_string($left) && is_string($right)) {
@@ -31,14 +38,20 @@ class Interpreter implements ExprVisitor
                 if(is_numeric($left) && is_numeric($right)) {
                     return $left + $right;
                 }
+
+                throw new RuntimeError($binary->operator, "Operands must be two numbers or two strings");
                 break;
             case Token::TYPE_GREATER:
+                $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left > (float)$right;
             case Token::TYPE_GREATER_EQUAL:
+                $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left >= (float)$right;
             case Token::TYPE_LESS:
+                $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left < (float)$right;
             case Token::TYPE_LESS_EQUAL:
+                $this->checkNumberOperands($binary->operator, $left, $right);
                 return (float)$left <= (float)$right;
             case Token::TYPE_BANG_EQUAL:
                 return $left != $right;
@@ -63,6 +76,7 @@ class Interpreter implements ExprVisitor
 
         switch ($unary->operator->type) {
             case Token::TYPE_MINUS:
+                $this->checkNumberOperand($unary->operator, $right);
                 return -(float)$right;
             case Token::TYPE_BANG:
                 return !$this->isTruthy($right);
@@ -73,7 +87,12 @@ class Interpreter implements ExprVisitor
 
     public function interpret(Expr $expr)
     {
-        return $this->evaluate($expr);
+        try {
+            $result = $this->evaluate($expr);
+            return $this->stringify($result);
+        } catch (RuntimeError $error) {
+            $this->errorReporter->runtimeError($error);
+        }
     }
 
     protected function evaluate(Expr $expr)
@@ -83,7 +102,7 @@ class Interpreter implements ExprVisitor
 
     protected function isTruthy($value): bool
     {
-        if ($value == null) {
+        if ($value === null) {
             return false;
         }
 
@@ -92,5 +111,32 @@ class Interpreter implements ExprVisitor
         }
 
         return true;
+    }
+
+    private function checkNumberOperand(Token $operator, $operand): void
+    {
+        if(is_numeric($operand)) {
+            return;
+        }
+
+        throw new RuntimeError($operator, "Operand must be a number");
+    }
+
+    private function checkNumberOperands(Token $operator, $left, $right): void
+    {
+        if(is_numeric($left) && is_numeric($right)) {
+            return;
+        }
+
+        throw new RuntimeError($operator, "Operands must be numbers");
+    }
+
+    private function stringify($value): string
+    {
+        if($value === null) {
+            return 'nil';
+        }
+
+        return $value;
     }
 }
