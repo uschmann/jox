@@ -36,6 +36,7 @@ class Lox
                 break;
             }
 
+
             $this->run($line);
 
             $this->hasError = false;
@@ -44,18 +45,18 @@ class Lox
 
     protected function run(string $source)
     {
-        $tokens = $this->scanner->scanTokens($source);
-        $expr   = $this->parser->parse($tokens);
+        try {
+            $tokens     = $this->scanner->scanTokens($source);
+            $statements = $this->parser->parse($tokens);
+            $this->interpreter->interpret($statements);
+        } catch (RuntimeError $e) {
 
-        if($expr) {
-            $result = $this->interpreter->interpret($expr);
-            if($result !== null) {
-                echo(json_encode($result) . "\n");
-            }
+        } catch(ParseException $e) {
+
         }
+
         //$astPrinter = new AstPrinter();
         //echo($astPrinter->print($expr) . "\n");
-
 
 
         //foreach ($tokens as $token) {

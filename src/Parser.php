@@ -7,6 +7,9 @@ use Uschmann\Jox\Expression\Expr;
 use Uschmann\Jox\Expression\Grouping;
 use Uschmann\Jox\Expression\Literal;
 use Uschmann\Jox\Expression\Unary;
+use Uschmann\Jox\Statement\Expression;
+use Uschmann\Jox\Statement\PrintStatement;
+use Uschmann\Jox\Statement\Stmt;
 
 class Parser
 {
@@ -17,7 +20,23 @@ class Parser
     {
     }
 
-    public function parse($tokens): Expr|null
+    /**
+     * @return Stmt[]
+     */
+    public function parse($tokens): array
+    {
+        $this->tokens  = $tokens;
+        $this->current = 0;
+        $statements    = [];
+
+        while (!$this->isAtEnd()) {
+            $statements[] = $this->statement();
+        }
+
+        return $statements;
+    }
+
+    public function parseExpression($tokens): Expr|null
     {
         $this->tokens  = $tokens;
         $this->current = 0;
@@ -27,6 +46,29 @@ class Parser
         } catch (ParseException $error) {
             return null;
         }
+    }
+
+    protected function statement(): Stmt
+    {
+        if($this->match(Token::TYPE_PRINT)) {
+            return $this->printStatement();
+        }
+
+        return $this->expressionStatement();
+    }
+
+    protected function printStatement(): PrintStatement
+    {
+        $expression = $this->expression();
+        $this->consume(Token::TYPE_SEMICOLON, "Expect ';' after value.");
+        return new PrintStatement($expression);
+    }
+
+    protected function expressionStatement(): Expression
+    {
+        $expression = $this->expression();
+        $this->consume(Token::TYPE_SEMICOLON, "Expect ';' after expression.");
+        return new Expression($expression);
     }
 
     protected function expression(): Expr

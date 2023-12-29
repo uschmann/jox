@@ -8,8 +8,12 @@ use Uschmann\Jox\Expression\ExprVisitor;
 use Uschmann\Jox\Expression\Grouping;
 use Uschmann\Jox\Expression\Literal;
 use Uschmann\Jox\Expression\Unary;
+use Uschmann\Jox\Statement\Expression;
+use Uschmann\Jox\Statement\PrintStatement;
+use Uschmann\Jox\Statement\Stmt;
+use Uschmann\Jox\Statement\StmtVisitor;
 
-class Interpreter implements ExprVisitor
+class Interpreter implements ExprVisitor, StmtVisitor
 {
     public function __construct(protected ErrorReporter $errorReporter)
     {
@@ -90,7 +94,23 @@ class Interpreter implements ExprVisitor
         return null;
     }
 
-    public function interpret(Expr $expr)
+    public function interpret($statements)
+    {
+        try {
+            foreach ($statements as $statement) {
+                $this->execute($statement);
+            }
+        } catch (RuntimeError $error) {
+            $this->errorReporter->runtimeError($error);
+        }
+    }
+
+    protected function execute(Stmt $stmt): void
+    {
+        $stmt->accept($this);
+    }
+
+    public function interpretExpression(Expr $expr)
     {
         try {
             $result = $this->evaluate($expr);
@@ -143,5 +163,20 @@ class Interpreter implements ExprVisitor
         }
 
         return $value;
+    }
+
+    /**************************************************************
+     * Statements
+     *************************************************************/
+
+    #[\Override] public function visitExpressionStmt(Expression $stmt): void
+    {
+        $this->evaluate($stmt->expression);
+    }
+
+    #[\Override] public function visitPrintStmt(PrintStatement $stmt): void
+    {
+        $value = $this->evaluate($stmt->expr);
+        echo json_encode($value) . "\n";
     }
 }
