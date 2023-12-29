@@ -4,7 +4,7 @@ namespace Uschmann\Jox\Statement;
 
 use Uschmann\Jox\Expression\Expr;
 
-class PrintStatement extends Stmt
+class PrintStmt extends Stmt
 {
     public function __construct(public Expr $expr)
     {

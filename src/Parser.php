@@ -7,9 +7,11 @@ use Uschmann\Jox\Expression\Expr;
 use Uschmann\Jox\Expression\Grouping;
 use Uschmann\Jox\Expression\Literal;
 use Uschmann\Jox\Expression\Unary;
-use Uschmann\Jox\Statement\Expression;
-use Uschmann\Jox\Statement\PrintStatement;
+use Uschmann\Jox\Expression\Variable;
+use Uschmann\Jox\Statement\ExpressionStmt;
+use Uschmann\Jox\Statement\PrintStmt;
 use Uschmann\Jox\Statement\Stmt;
+use Uschmann\Jox\Statement\VarStmt;
 
 class Parser
 {
@@ -30,7 +32,7 @@ class Parser
         $statements    = [];
 
         while (!$this->isAtEnd()) {
-            $statements[] = $this->statement();
+            $statements[] = $this->declaration();
         }
 
         return $statements;
@@ -48,6 +50,34 @@ class Parser
         }
     }
 
+    protected function declaration(): Stmt|null
+    {
+        try {
+            if($this->match(Token::TYPE_VAR)) {
+                return $this->varStatement();
+            }
+
+            return $this->statement();
+        } catch (ParseException $parseException) {
+            $this->synchronize();
+            return null;
+        }
+
+    }
+
+    protected function varStatement(): Stmt
+    {
+        $name = $this->consume(Token::TYPE_IDENTIFIER, "Expect variable name");
+
+        $initializer = null;
+        if($this->match(Token::TYPE_EQUAL)) {
+            $initializer = $this->expression();
+        }
+
+        $this->consume(Token::TYPE_SEMICOLON, "Expect ';' after variable declaration");
+        return new VarStmt($name, $initializer);
+    }
+
     protected function statement(): Stmt
     {
         if($this->match(Token::TYPE_PRINT)) {
@@ -57,18 +87,18 @@ class Parser
         return $this->expressionStatement();
     }
 
-    protected function printStatement(): PrintStatement
+    protected function printStatement(): PrintStmt
     {
         $expression = $this->expression();
         $this->consume(Token::TYPE_SEMICOLON, "Expect ';' after value.");
-        return new PrintStatement($expression);
+        return new PrintStmt($expression);
     }
 
-    protected function expressionStatement(): Expression
+    protected function expressionStatement(): ExpressionStmt
     {
         $expression = $this->expression();
         $this->consume(Token::TYPE_SEMICOLON, "Expect ';' after expression.");
-        return new Expression($expression);
+        return new ExpressionStmt($expression);
     }
 
     protected function expression(): Expr
@@ -153,6 +183,10 @@ class Parser
             $expr = $this->expression();
             $this->consume(Token::TYPE_RIGHT_PAREN, "Expect ')' after expression.");
             return new Grouping($expr);
+        }
+
+        if($this->match(Token::TYPE_IDENTIFIER)) {
+            return new Variable($this->previous());
         }
 
         throw $this->error($this->peek(), "Expect expression.");

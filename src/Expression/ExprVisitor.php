@@ -8,4 +8,5 @@ interface ExprVisitor
     public function visitGrouping(Grouping $grouping);
     public function visitLiteral(Literal $literal);
     public function visitUnary(Unary $unary);
+    public function visitVariable(Variable $variable);
 }

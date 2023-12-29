@@ -8,14 +8,16 @@ use Uschmann\Jox\Expression\ExprVisitor;
 use Uschmann\Jox\Expression\Grouping;
 use Uschmann\Jox\Expression\Literal;
 use Uschmann\Jox\Expression\Unary;
-use Uschmann\Jox\Statement\Expression;
-use Uschmann\Jox\Statement\PrintStatement;
+use Uschmann\Jox\Expression\Variable;
+use Uschmann\Jox\Statement\ExpressionStmt;
+use Uschmann\Jox\Statement\PrintStmt;
 use Uschmann\Jox\Statement\Stmt;
 use Uschmann\Jox\Statement\StmtVisitor;
+use Uschmann\Jox\Statement\VarStmt;
 
 class Interpreter implements ExprVisitor, StmtVisitor
 {
-    public function __construct(protected ErrorReporter $errorReporter)
+    public function __construct(protected ErrorReporter $errorReporter, protected Environment $environment)
     {
     }
 
@@ -169,14 +171,30 @@ class Interpreter implements ExprVisitor, StmtVisitor
      * Statements
      *************************************************************/
 
-    #[\Override] public function visitExpressionStmt(Expression $stmt): void
+    #[\Override] public function visitExpressionStmt(ExpressionStmt $stmt): void
     {
         $this->evaluate($stmt->expression);
     }
 
-    #[\Override] public function visitPrintStmt(PrintStatement $stmt): void
+    #[\Override] public function visitPrintStmt(PrintStmt $stmt): void
     {
         $value = $this->evaluate($stmt->expr);
         echo json_encode($value) . "\n";
+    }
+
+    #[\Override] public function visitVariable(Variable $variable)
+    {
+        return $this->environment->get($variable->name);
+    }
+
+    #[\Override] public function visitVarStmt(VarStmt $stmt): void
+    {
+        $value = null;
+
+        if($stmt->initializer !== null) {
+            $value = $this->evaluate($stmt->initializer);
+        }
+
+        $this->environment->define($stmt->name->lexeme, $value);
     }
 }
